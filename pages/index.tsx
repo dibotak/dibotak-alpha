@@ -6,6 +6,7 @@ import styles from '../styles/Home.module.css'
 import Card from '../components/Card'
 import Modal from '../components/Modal'
 import DInput from '../components/DInput'
+import logo from '../public/Dib.png'
 
 export default function Home({ data, authors }: any) {
   // useEffect(() => {
@@ -70,7 +71,7 @@ export default function Home({ data, authors }: any) {
 
       <nav className="flex w-full bg-blue-100 px-8 py-3 justify-between items-center">
         <div>
-          <Image src="/dib.png" alt="DiBotak" width="40px" height="auto" />
+          <Image src={logo} alt="DiBotak" width="40px" height="auto" />
         </div>
         <div>
           <a href="#">Home</a>
