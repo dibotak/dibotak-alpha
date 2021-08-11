@@ -2,12 +2,15 @@ import React from 'react'
 interface Card {
   title: string
   subtitle: string
+  imgUrl: string
   action: () => any
 }
-const Card: React.FC<Card> = ({ title, subtitle, action }) => {
+const Card: React.FC<Card> = ({ title, subtitle, imgUrl, action }) => {
 	return (
     <div className="border border-blue-500 p-2">
-      <div className="bg-gray-300" style={{ height: '50px' }}></div>
+      <div className="p-2 flex justify-center">
+        <img src={imgUrl} alt="" />
+      </div>
       <h5 className="text-lg font-semibold">{ title }</h5>
       <h6>{ subtitle }</h6>
       <div className="flex justify-end">

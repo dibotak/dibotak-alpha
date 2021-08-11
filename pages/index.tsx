@@ -1,29 +1,58 @@
 import { GetServerSideProps } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
-import React, { DOMAttributes, FormEventHandler, FormHTMLAttributes, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from '../styles/Home.module.css'
 import Card from '../components/Card'
 import Modal from '../components/Modal'
 import DInput from '../components/DInput'
 
 export default function Home({ data, authors }: any) {
+  // useEffect(() => {
+  //   console.log(data)
+  // })
   const [modalForm, setModalForm] = useState(false)
-  const [borrowInfo, setBorrowInfo] = useState({ name: '', email: '', phoneNumber: '' })
+  const [modalSuccess, setModalSuccess] = useState(false)
+  const [modalError, setModalError] = useState(false)
+  const [borrowInfo, setBorrowInfo] = useState({ name: '', email: '', phoneNumber: '', book: '' })
+  const [isLoading, setIsLoading] = useState(false)
 
   function modalBook(bookId: string | number) {
     console.log(bookId)
+    setBorrowInfo({ ...borrowInfo, book: String(bookId) })
     setModalForm(true)
   }
   function closeModal() {
     setModalForm(false)
-    setBorrowInfo({ name: '', email: '', phoneNumber: '' })
+    setBorrowInfo({ name: '', email: '', phoneNumber: '', book: '' })
   }
   function submitBorrow(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault()
-    console.log('submite item')
     console.log(borrowInfo)
-    closeModal()
+    setIsLoading(true)
+    fetch('https://api.dibotak.com/borrowers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(borrowInfo)
+    })
+      .then((res: any) => res.json())
+      .then((data: any) => {
+        console.log(data)
+        closeModal()
+        setIsLoading(false)
+        if (data.statusCode >= 400) {
+          setModalError(true)
+        } else {
+          setModalSuccess(true)
+        }
+      })
+      .catch((err: any) => {
+        console.log('come to error catch')
+        closeModal()
+        setIsLoading(false)
+      })
   }
   function changeBorrowInfo(key: string, value: string) {
     setBorrowInfo({ ...borrowInfo, [key]: value })
@@ -39,9 +68,9 @@ export default function Home({ data, authors }: any) {
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" /> 
       </Head>
 
-      <nav className="flex w-full bg-blue-100 px-8 py-3 justify-between">
+      <nav className="flex w-full bg-blue-100 px-8 py-3 justify-between items-center">
         <div>
-          <span>DiBotak</span>
+          <img src="/dib.png" alt="DiBotak" width="40px" />
         </div>
         <div>
           <a href="#">Home</a>
@@ -60,12 +89,14 @@ export default function Home({ data, authors }: any) {
             {data.map((book: any, i: number) => (
               <Card title={book.title} subtitle={book.authors[0].name} key={'book-'+i}
                 action={() => modalBook(book.id)}
+                imgUrl={book.cover.url + '?tr=h-250'}
               />
             ))}
           </div>
         </div>
         <Modal show={modalForm} title="Form Peminjaman Buku" close={closeModal}>
-          <form onSubmit={submitBorrow} style={{ maxWidth: '320px' }} className="mx-auto">
+          <p className="pb-5">Judul: {data.filter((el: any) => el.id == borrowInfo.book)[0]?.title}</p>
+          <form onSubmit={submitBorrow} style={{ maxWidth: '320px' }} className="mx-auto pb-5">
             <DInput
               label="Nama"
               id="name"
@@ -75,6 +106,7 @@ export default function Home({ data, authors }: any) {
             <DInput
               label="Email"
               id="email"
+              type="email"
               onChange={(ev:React.FormEvent<HTMLInputElement>) => changeBorrowInfo('email', ev.currentTarget.value)}
               value={borrowInfo.email}
             />
@@ -92,6 +124,25 @@ export default function Home({ data, authors }: any) {
             </div>
           </form>
         </Modal>
+        <Modal show={modalError} title="Terjadi Kesalahan" close={() => setModalError(false)}>
+          <div>
+            <p>Terjadi kesalahan</p>
+          </div>
+        </Modal>
+        <Modal show={modalSuccess} title="Berhasil!" close={() => setModalSuccess(false)}>
+          <div className="p-4">
+            <p>Untuk tahap selanjutnya, Kamu akan dihubungi via email / whatsapp dalam 1x24 jam.</p>
+          </div>
+        </Modal>
+        {isLoading && 
+          <div className="fixed top-0 right-0 left-0 bottom-0 bg-black bg-opacity-25 z-50">
+            <div className="absolute bg-white shadow-sm rounded-sm mx-auto flex items-center"
+              style={{width: '200px', height: '50px', top: 'calc(50% - 50px)', left: 'calc(50% - 100px)'}}
+            >
+              <p className="py-2 text-center w-full">Mohon tunggu ...</p>
+            </div>
+          </div>
+        }
       </main>
 
       <footer className={styles.footer}>
@@ -111,9 +162,9 @@ export default function Home({ data, authors }: any) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const res = await fetch('http://localhost:1337/books')
+  const res = await fetch('https://api.dibotak.com/books')
   const data: any = await res.json()
-  const resAuthors = await fetch('http://localhost:1337/authors')
+  const resAuthors = await fetch('https://api.dibotak.com/authors')
   const authors = await resAuthors.json()
 
   return {
