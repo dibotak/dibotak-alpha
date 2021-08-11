@@ -71,7 +71,7 @@ export default function Home({ data, authors }: any) {
 
       <nav className="flex w-full bg-blue-100 px-8 py-3 justify-between items-center">
         <div>
-          <Image src={logo} alt="DiBotak" width="40px" height="auto" />
+          <Image src={logo} alt="DiBotak" width="40px" height="40px" />
         </div>
         <div>
           <a href="#">Home</a>
