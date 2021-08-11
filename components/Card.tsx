@@ -1,4 +1,6 @@
 import React from 'react'
+import Image from 'next/image'
+
 interface Card {
   title: string
   subtitle: string
@@ -9,7 +11,7 @@ const Card: React.FC<Card> = ({ title, subtitle, imgUrl, action }) => {
 	return (
     <div className="border border-blue-500 p-2">
       <div className="p-2 flex justify-center">
-        <img src={imgUrl} alt="" />
+        <Image src={imgUrl} alt="" layout="fill" />
       </div>
       <h5 className="text-lg font-semibold">{ title }</h5>
       <h6>{ subtitle }</h6>
